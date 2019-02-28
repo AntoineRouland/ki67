@@ -106,10 +106,8 @@ venv.bak/
 .mypy_cache/
 
 .idea/
-Data/.DS_Store
+*.DS_Store
 "Data/1309620 -A2/Icon\r"
-Data/1329941 -B3/.DS_Store
 "Data/1329941 -B3/Icon\r"
-Data/8682421 -A3/.DS_Store
 "Data/8682421 -A3/Icon\r"
 "Data/Icon\r"
