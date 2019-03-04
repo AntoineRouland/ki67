@@ -1,6 +1,8 @@
 import os
 
 import skimage
+from skimage import img_as_float
+from skimage.io import imread
 
 RELATIVE_DATA_PATH = 'Data'
 
@@ -17,9 +19,9 @@ def image_paths(patient_name):
 def num_images(patient_name):
     return len(image_paths(patient_name))
 
-def images(patient_name, idcs=None):
+def images(patient_name, max_images=None):
     path_images = image_paths(patient_name)
-    if idcs is not None:
-        path_images = path_images[idcs]
+    if max_images is not None:
+        path_images = path_images[0:max_images]
     for path in path_images:
-        yield path, skimage.io.imread(path)
+        yield path, imread(path)
