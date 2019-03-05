@@ -10,7 +10,7 @@ from skimage import img_as_float
 from skimage.io import imsave, imread
 from skimage.transform import resize
 
-from utils import outline_regions, crop, hash_np
+from src.utils import outline_regions, crop, hash_np
 
 PROTOTYPES_Ki67_RGB = {
     'Positive': [(67, 30, 21), (108, 95, 89), (105, 86, 71), (82, 35, 7),

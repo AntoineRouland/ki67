@@ -1,6 +1,5 @@
 import datetime
 import logging
-import random
 
 import os
 import skimage.io as io
@@ -9,10 +8,10 @@ from skimage.exposure import equalize_adapthist
 from skimage.filters import gaussian
 from skimage.transform import resize
 
-from patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
-from color_segmentation import color_segmentation
-from data_loader import patient_names, images
-from utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
+from src.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
+from src.color_segmentation import color_segmentation
+from src.data_loader import patient_names, images
+from src.utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
 
 MAX_PATIENTS = 1
 MAX_IMAGES_PER_PATIENT = 1

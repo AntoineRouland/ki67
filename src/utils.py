@@ -2,7 +2,7 @@ import hashlib
 
 import numpy as np
 from matplotlib import pyplot as plt
-from skimage import img_as_uint, img_as_float
+from skimage import img_as_float
 from skimage.color import rgb2lab, lab2rgb
 from skimage.segmentation import find_boundaries
 
@@ -23,7 +23,7 @@ def apply_on_normalized_luminance(operation, image_rgb):
     return lab2rgb(image_lab)
 
 def visualize_classification(classification_as_indexed_labels):
-    from patch_classifier import PROTOTYPES_Ki67_RGB
+    from src.patch_classifier import PROTOTYPES_Ki67_RGB
     classification_colored = np.empty(shape=classification_as_indexed_labels.shape + (3, ), dtype='float')
     for idx_class, list_ref_colors in enumerate(PROTOTYPES_Ki67_RGB.values()):
         region = classification_as_indexed_labels == idx_class
