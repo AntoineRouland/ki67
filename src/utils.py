@@ -7,9 +7,8 @@ from skimage.color import rgb2lab, lab2rgb
 from skimage.segmentation import find_boundaries
 
 
-
-def colormap(labels_mask):
-    return plt.cm.get_cmap('tab20')(np.remainder(labels_mask, 20))[:, :, :3]
+# Simple Image Processing tasks
+###
 
 def apply_on_normalized_luminance(operation, image_rgb):
     image_lab = rgb2lab(image_rgb)
@@ -21,6 +20,14 @@ def apply_on_normalized_luminance(operation, image_rgb):
     luminance = luminance*b + a
     image_lab[:, :, 0] = luminance
     return lab2rgb(image_lab)
+
+def crop(image, bounding_box):
+        r_left, r_right, c_left, c_right = bounding_box
+        return image[r_left:r_right, c_left:c_right, ...]
+
+
+# Visualization
+###
 
 def visualize_classification(classification_as_indexed_labels):
     from src.patch_classifier import PROTOTYPES_Ki67_RGB
@@ -38,10 +45,12 @@ def outline_regions(image, labels_mask):
     image[boundaries, :] = color
     return image
 
+def colormap(labels_mask):
+    return plt.cm.get_cmap('tab20')(np.remainder(labels_mask, 20))[:, :, :3]
 
-def crop(image, bounding_box):
-        r_left, r_right, c_left, c_right = bounding_box
-        return image[r_left:r_right, c_left:c_right, ...]
+
+# Misc
+###
 
 def hash_np(numpy_array):
     return hashlib.sha1(numpy_array.view(np.uint8)).hexdigest()

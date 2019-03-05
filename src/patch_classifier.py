@@ -10,6 +10,7 @@ from skimage import img_as_float
 from skimage.io import imsave, imread
 from skimage.transform import resize
 
+from src.data_loader import root_dir, FOLDER_LABELLED_DATA, FOLDER_TEMP_DATA
 from src.utils import outline_regions, crop, hash_np
 
 PROTOTYPES_Ki67_RGB = {
@@ -98,12 +99,13 @@ class PatchClassifier:
             patches = itertools.islice(patches, max_patches)
         for patch in patches:
             assert isinstance(patch, Patch)
-            os.makedirs('Results/AuxData', exist_ok=True)
-
+            os.makedirs(root_dir(FOLDER_TEMP_DATA), exist_ok=True)
+            path_patch = root_dir(FOLDER_TEMP_DATA, 'patch.png')
+            path_outln = root_dir(FOLDER_TEMP_DATA, 'outln.png')
             images = {
-                'Results/AuxData/patch.png': patch.cropped_image(),
-                'Results/AuxData/outlined.png': outline_regions(image=patch.cropped_image(),
-                                                                labels_mask=patch.cropped_mask())
+                path_patch: patch.cropped_image(),
+                path_outln: outline_regions(image=patch.cropped_image(),
+                                            labels_mask=patch.cropped_mask())
             }
             [imsave(fname=rel_path, arr=resize(img, output_shape=(600, 600))) for rel_path, img in images.items()]
             labels = LABELS_Ki67 + ['Not well defined']
@@ -120,13 +122,14 @@ class PatchClassifier:
         raise NotImplementedError('Override this method!')
 
     def save_labelled_patches(self, training_label):
-        data_dir = f'Labelled/{training_label}'
+        data_dir = root_dir(FOLDER_LABELLED_DATA, training_label)
         os.makedirs(data_dir, exist_ok=False)
         for patch in self.labelled_patches:
             patch.save(folder=data_dir)
 
     def load_labelled_patches(self, training_label):
-        self.labelled_patches = Patch.load_all(folder=f'Labelled/{training_label}')
+        data_dir = root_dir(FOLDER_LABELLED_DATA, training_label)
+        self.labelled_patches = Patch.load_all(folder=data_dir)
 
     def patches(self, image, region_labels):
         # Generator yielding (r_left, r_right, c_left, c_right) given a mask of labels

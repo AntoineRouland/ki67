@@ -10,7 +10,7 @@ from skimage.transform import resize
 
 from src.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
 from src.color_segmentation import color_segmentation
-from src.data_loader import patient_names, images
+from src.data_loader import patient_names, images, root_dir, FOLDER_EXPERIMENTS
 from src.utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
 
 MAX_PATIENTS = 1
@@ -20,7 +20,7 @@ RESIZE_IMAGES = (300, 300)  # None to deactivate
 
 if __name__ == "__main__":
     execution_id = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    results_dir = os.path.join('Results', execution_id)
+    results_dir = root_dir(FOLDER_EXPERIMENTS, execution_id)
     os.makedirs(results_dir, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
