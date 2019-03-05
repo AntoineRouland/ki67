@@ -1,25 +1,27 @@
 import datetime
 import logging
-import matplotlib.pyplot as plt
-import numpy as np
+import random
+
 import os
 import skimage.io as io
 from skimage import img_as_float
 from skimage.exposure import equalize_adapthist
 from skimage.filters import gaussian
-from skimage.morphology import opening, selem
 from skimage.transform import resize
 
-from color_segmentation import color_segmentation, PROTOTYPES_Ki67_RGB, pixelwise_closest_centroid
+from patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
+from color_segmentation import color_segmentation
 from data_loader import patient_names, images
-from utils import apply_on_normalized_luminance
+from utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
 
-MAX_IMAGES_PER_PATIENT = 3
-RESIZE_IMAGES = (500, 500)  # None to deactivate otherwise
-COLOR = lambda img: plt.cm.get_cmap('tab20')(np.remainder(img, 20))[:, :, :3]
+MAX_PATIENTS = 1
+MAX_IMAGES_PER_PATIENT = 1
+MAX_PATCHES_PER_IMAGE = 2
+RESIZE_IMAGES = (300, 300)  # None to deactivate
 
 if __name__ == "__main__":
-    results_dir = os.path.join('Results', datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    execution_id = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    results_dir = os.path.join('Results', execution_id)
     os.makedirs(results_dir, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
@@ -29,7 +31,8 @@ if __name__ == "__main__":
         ]
     )
 
-    for idx_p, p_name in enumerate(patient_names()):
+    p_names = patient_names()
+    for idx_p, p_name in enumerate(p_names[0:MAX_PATIENTS]):
 
         for idx_img, (path_image, image) in enumerate(images(patient_name=p_name, max_images=MAX_IMAGES_PER_PATIENT)):
             results_p_dir = os.path.join(results_dir, p_name, str(idx_img))
@@ -59,7 +62,7 @@ if __name__ == "__main__":
             logging.info('Creating color segmentation')
             segmentation_idcs, segmentation_averaged = color_segmentation(image)
             io.imsave(fname=os.path.join(results_p_dir, '02 Segmentation idcs.jpg'),
-                      arr=COLOR(segmentation_idcs))
+                      arr=colormap(segmentation_idcs))
             io.imsave(fname=os.path.join(results_p_dir, '03 Segmentation averaged.jpg'),
                       arr=segmentation_averaged)
 
@@ -68,20 +71,40 @@ if __name__ == "__main__":
                 image=segmentation_averaged,
                 centroids_rgb=PROTOTYPES_Ki67_RGB)
             io.imsave(fname=os.path.join(results_p_dir, '04 Classification.png'),
-                      arr=COLOR(classification))
+                      arr=colormap(classification))
             io.imsave(fname=os.path.join(results_p_dir, '04 01 Positive.png'),
-                      arr=COLOR(classification == 0))
+                      arr=colormap(classification == 0))
             io.imsave(fname=os.path.join(results_p_dir, '04 02 Negative.jpg'),
-                      arr=COLOR(classification == 1))
+                      arr=colormap(classification == 1))
             io.imsave(fname=os.path.join(results_p_dir, '04 03 Background.jpg'),
-                      arr=COLOR(classification == 2))
+                      arr=colormap(classification == 2))
 
             logging.info('Visualizing classification')
-            classification_colored = np.empty(shape=image.shape, dtype='float')
-            for idx_class, list_ref_colors in enumerate(PROTOTYPES_Ki67_RGB.values()):
-                for idx_c in range(3):
-                    classification_colored[:, :, idx_c] = np.full(shape=classification.shape,
-                                                                  fill_value=list_ref_colors[0][idx_c]/255)
+            classification_colored = visualize_classification(classification)
             io.imsave(fname=os.path.join(results_p_dir, '04 04 Classification colored.jpg'),
-                      arr=COLOR(classification_colored))
+                      arr=classification_colored)
 
+            logging.info('Creating some patches')
+            c1 = PatchClassifier()
+            patches = list(c1.patches(image=image, region_labels=segmentation_idcs))
+
+            logging.info('Labelling patches')
+            c1.label_patches(patches=patches, max_patches=MAX_PATCHES_PER_IMAGE)
+
+            logging.info('Saving patches')
+            c1.save_labelled_patches(training_label=execution_id)
+
+            logging.info('Retrieving patches')
+            c2 = PatchClassifier()
+            c2.load_labelled_patches(training_label=execution_id)
+
+            logging.info('Visualizing retrieved patches')
+            for idx_patch, patch in enumerate(c2.labelled_patches):
+                io.imsave(fname=os.path.join(results_p_dir, f'05 {idx_patch:02d} Patch image classification.jpg'),
+                          arr=colormap(crop(image=segmentation_idcs, bounding_box=patch.bounding_box)))
+                io.imsave(fname=os.path.join(results_p_dir, f'05 {idx_patch:02d} Patch image outlined.jpg'),
+                          arr=outline_regions(patch.cropped_image(), patch.cropped_mask()))
+                io.imsave(fname=os.path.join(results_p_dir, f'05 {idx_patch:02d} Patch image.jpg'),
+                          arr=patch.cropped_image())
+                io.imsave(fname=os.path.join(results_p_dir, f'05 {idx_patch:02d} Patch mask.jpg'),
+                          arr=colormap(patch.cropped_mask()))
