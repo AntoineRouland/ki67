@@ -4,9 +4,12 @@ from skimage.io import imread
 
 FOLDER_DATA = 'Data'
 FOLDER_RESULTS = 'Results'
-FOLDER_EXPERIMENTS = os.path.join(FOLDER_RESULTS, 'Experiments')
-FOLDER_TEMP_DATA = os.path.join(FOLDER_RESULTS, 'Results/0000 TEMP')
-FOLDER_LABELLED_DATA = os.path.join(FOLDER_RESULTS, 'Results/Labelled')
+
+def FOLDER_EXPERIMENTS(version):
+    return os.path.join(FOLDER_RESULTS, f'Experiments v{version}')
+
+FOLDER_TEMP_DATA = os.path.join(FOLDER_RESULTS, '0000 TEMP')
+FOLDER_LABELLED_DATA = os.path.join(FOLDER_RESULTS, 'Labelled')
 
 def root_dir(*args):
     return os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir, os.pardir, *args)))

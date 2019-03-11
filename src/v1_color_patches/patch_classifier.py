@@ -105,7 +105,7 @@ class PatchClassifier:
             images = {
                 path_patch: patch.cropped_image(),
                 path_outln: outline_regions(image=patch.cropped_image(),
-                                            labels_mask=patch.cropped_mask())
+                                            region_labels=patch.cropped_mask())
             }
             [imsave(fname=rel_path, arr=resize(img, output_shape=(600, 600))) for rel_path, img in images.items()]
             labels = LABELS_Ki67 + ['Not well defined']

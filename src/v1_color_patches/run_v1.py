@@ -1,26 +1,28 @@
 import datetime
 import logging
 
+import numpy as np
 import os
 import skimage.io as io
 from skimage import img_as_float
+from skimage.color import rgb2lab
 from skimage.exposure import equalize_adapthist
 from skimage.filters import gaussian
 from skimage.transform import resize
 
-from src.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
-from src.color_segmentation import color_segmentation
+from src.v1_color_patches.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
+from src.v1_color_patches.color_segmentation import color_segmentation
 from src.data_loader import patient_names, images, root_dir, FOLDER_EXPERIMENTS
 from src.utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
 
 MAX_PATIENTS = 1
 MAX_IMAGES_PER_PATIENT = 1
 MAX_PATCHES_PER_IMAGE = 2
-RESIZE_IMAGES = (300, 300)  # None to deactivate
+RESIZE_IMAGES = None    # (300, 300)  # None to deactivate
 
 if __name__ == "__main__":
     execution_id = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    results_dir = root_dir(FOLDER_EXPERIMENTS, execution_id)
+    results_dir = root_dir(FOLDER_EXPERIMENTS(version=1), execution_id)
     os.makedirs(results_dir, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
@@ -43,6 +45,26 @@ if __name__ == "__main__":
                 image = resize(img_as_float(image), RESIZE_IMAGES + (3, ))
             io.imsave(fname=os.path.join(results_p_dir, '01 01 Original.jpg'),
                       arr=image)
+
+            image_lab = rgb2lab(image)
+            luminance = image_lab[:, :, 0]
+            a = np.min(luminance)
+            b = np.max(luminance - a)
+            luminance = (luminance - a) / b
+            io.imsave(fname=os.path.join(results_p_dir, '01 01 Luminance.png'),
+                      arr=luminance)
+            channel_a = image_lab[:, :, 1]
+            a = np.min(channel_a)
+            b = np.max(channel_a - a)
+            channel_a = (channel_a - a) / b
+            io.imsave(fname=os.path.join(results_p_dir, '01 01 channel_a.png'),
+                      arr=channel_a)
+            channel_b = image_lab[:, :, 2]
+            a = np.min(channel_b)
+            b = np.max(channel_b - a)
+            channel_b = (channel_b - a) / b
+            io.imsave(fname=os.path.join(results_p_dir, '01 01 channel_b.png'),
+                      arr=channel_b)
 
             logging.info('Gaussian filter')
             image = apply_on_normalized_luminance(

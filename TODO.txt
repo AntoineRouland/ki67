@@ -2,6 +2,16 @@
 ###
 
 
+# Ideas
+###
+
+* Try clustering:
+    * Spectral clustering.
+    * k-means.
+* Try separating on CIELab color space:
+    * a for brown against everything else.
+    * b for blue against white.
+
 # Features
 ###
 
