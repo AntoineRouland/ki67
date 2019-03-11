@@ -47,7 +47,7 @@ def outline_regions(image, region_labels):
 
 def average_color(image, region_labels):
     result_lab = rgb2lab(image)
-    for label in range(np.max(region_labels)):
+    for label in range(np.max(region_labels)+1):
         region = region_labels == label
         result_lab[region, :] = np.average(result_lab[region, :], axis=0)
     return lab2rgb(result_lab)
