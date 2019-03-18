@@ -17,7 +17,7 @@ from src.utils import apply_on_normalized_luminance, colormap, outline_regions, 
 MAX_PATIENTS = 1
 MAX_IMAGES_PER_PATIENT = 1
 MAX_PATCHES_PER_IMAGE = 2
-RESIZE_IMAGES = (1000, 1000)  # None to deactivate
+RESIZE_IMAGES = None    # (1000, 1000)  # None to deactivate
 
 if __name__ == "__main__":
     execution_id = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
