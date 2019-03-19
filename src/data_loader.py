@@ -67,4 +67,4 @@ def read_from_csv(NCH, csv_row):
 
 def get_expert_Ki67(sample_name):
     m = re.match(r'(?P<NCH>[0-9]*) ?-(?P<Zone>[AB])[0-9]', sample_name)
-    return read_from_csv(NCH=m.group('NCH'), csv_row=f"Zona {m.group('Zone')} - Ki67")
+    return int(read_from_csv(NCH=m.group('NCH'), csv_row=f"Zona {m.group('Zone')} - Ki67"))
