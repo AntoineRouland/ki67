@@ -56,7 +56,7 @@ def images(patient_name, max_images=None):
 
 def read_from_csv(NCH, csv_row):
     csv_path = root_dir(FOLDER_DATA, 'GLIOMES PET - ANONIMITZAT.csv')
-    with open(csv_path) as csv_file:
+    with open(csv_path, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=";")
         for row in csv_reader:
             if row['NCH'] == NCH:
