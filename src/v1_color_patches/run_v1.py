@@ -12,7 +12,7 @@ from skimage.transform import resize
 
 from src.v1_color_patches.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
 from src.v1_color_patches.color_segmentation import color_segmentation
-from src.data_loader import patient_names, images, root_dir, FOLDER_EXPERIMENTS
+from src.data_loader import sample_names, images, root_dir, FOLDER_EXPERIMENTS
 from src.utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
 
 MAX_PATIENTS = 1
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         ]
     )
 
-    p_names = patient_names()
+    p_names = sample_names()
     for idx_p, p_name in enumerate(p_names[0:MAX_PATIENTS]):
 
         for idx_img, (path_image, image) in enumerate(images(patient_name=p_name, max_images=MAX_IMAGES_PER_PATIENT)):

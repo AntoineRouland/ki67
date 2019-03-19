@@ -19,14 +19,15 @@ def remove_thin_structures(mask, min_width):
 def manhattan_distance_to_mask(mask):
     if not np.any(mask):
         return np.full(shape=mask.shape, fill_value=np.inf)
-    d = np.full(shape=mask.shape, fill_value=np.inf, dtype='int32')
+    d = np.full(shape=mask.shape, fill_value=np.inf, dtype='float64')
     d_sofar = 0
-    d[mask] = d_sofar
+    reached_pixels = mask
+    d[reached_pixels] = d_sofar
     se = diamond(1)
     while np.any(np.isinf(d)):
         d_sofar += 1
         mask = binary_dilation(mask, selem=se)
-        reached_pixels = mask & ~np.isinf(d)
+        reached_pixels = mask & np.isinf(d)
         d[reached_pixels] = d_sofar
     return d
 

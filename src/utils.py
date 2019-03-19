@@ -21,6 +21,7 @@ def apply_on_normalized_luminance(operation, image_rgb):
     image_lab[:, :, 0] = luminance
     return lab2rgb(image_lab)
 
+
 def crop(image, bounding_box):
         r_left, r_right, c_left, c_right = bounding_box
         return image[r_left:r_right, c_left:c_right, ...]
@@ -28,6 +29,7 @@ def crop(image, bounding_box):
 
 # Visualization
 ###
+
 
 def visualize_classification(classification_as_indexed_labels):
     from src.v1_color_patches.patch_classifier import PROTOTYPES_Ki67_RGB
@@ -38,12 +40,14 @@ def visualize_classification(classification_as_indexed_labels):
         classification_colored[region, :] = color
     return classification_colored
 
+
 def outline_regions(image, region_labels):
     boundaries = find_boundaries(region_labels, mode='outer', background=0)
     image = img_as_float(image.copy())
     color = np.array([0, 1, 0], dtype='float').reshape((1, 1, 3))
     image[boundaries, :] = color
     return image
+
 
 def average_color(image, region_labels):
     result_lab = rgb2lab(image)
@@ -52,12 +56,23 @@ def average_color(image, region_labels):
         result_lab[region, :] = np.average(result_lab[region, :], axis=0)
     return lab2rgb(result_lab)
 
+
 def colormap(labels_mask):
     return plt.cm.get_cmap('tab20')(np.remainder(labels_mask, 20))[:, :, :3]
 
 
+def visualize_contrasted_grayscale(grayscale_image):
+    grayscale_image = grayscale_image - np.min(grayscale_image)
+    if not np.all(grayscale_image == 0):
+        grayscale_image = grayscale_image / np.max(grayscale_image)
+    if grayscale_image.ndim == 2:
+        grayscale_image = grayscale_image[:, :, np.newaxis]
+    return np.repeat(grayscale_image, repeats=3, axis=2)
+
+
 # Misc
 ###
+
 
 def hash_np(numpy_array):
     return hashlib.sha1(numpy_array.view(np.uint8)).hexdigest()

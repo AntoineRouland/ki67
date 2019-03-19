@@ -1,5 +1,6 @@
 import datetime
 import logging
+from math import ceil
 
 import numpy as np
 import os
@@ -11,8 +12,9 @@ from skimage.filters import gaussian
 from skimage.transform import resize
 from sklearn.cluster import KMeans
 
-from src.data_loader import patient_names, images, root_dir, FOLDER_EXPERIMENTS
-from src.utils import apply_on_normalized_luminance, colormap, outline_regions, average_color
+from src.data_loader import sample_names, images, root_dir, FOLDER_EXPERIMENTS
+from src.utils import apply_on_normalized_luminance, colormap, outline_regions, average_color, \
+    visualize_contrasted_grayscale
 from src.v5_splitting_cells.cellmask_processing import fill_holes, remove_thin_structures, manhattan_distance_to_mask, \
     local_maxima_location
 
@@ -20,7 +22,7 @@ MAX_PATIENTS = 1
 MAX_IMAGES_PER_PATIENT = 1
 MAX_PATCHES_PER_IMAGE = 2
 
-RESIZE_IMAGES = (300, 300) or None    # (1000, 1000)  # None to deactivate
+SCALE = None  # None to deactivate
 GAUSSIAN_FILTER_SD = 2
 CLUSTERING_NUM_CENTROIDS = 4
 RADIUS_FILL_HOLES = 5
@@ -38,7 +40,7 @@ if __name__ == "__main__":
         ]
     )
 
-    p_names = patient_names()
+    p_names = sample_names()
     for idx_p, p_name in enumerate(p_names[0:MAX_PATIENTS]):
 
         for idx_img, (path_image, original_image) in enumerate(images(patient_name=p_name, max_images=MAX_IMAGES_PER_PATIENT)):
@@ -47,9 +49,10 @@ if __name__ == "__main__":
             os.makedirs(results_p_dir, exist_ok=True)
             logging.info(f'Processing: {p_name}-{idx_img}')
 
-            if RESIZE_IMAGES:
+            if SCALE:
                 logging.info('Resizing image')
-                original_image = resize(img_as_float(original_image), RESIZE_IMAGES + (3, ))
+                sz = [ceil(d*SCALE) for d in original_image.shape[:2]] + [3]
+                original_image = resize(img_as_float(original_image), sz)
             io.imsave(fname=os.path.join(results_p_dir, '01 01 Original.jpg'),
                       arr=original_image)
             image = original_image
@@ -109,11 +112,11 @@ if __name__ == "__main__":
             negative_cell_location = local_maxima_location(negative_pixelwise_radius)
             # Visualize
             io.imsave(fname=os.path.join(results_p_dir, f'05 Positives - Distance to border.jpg'),
-                      arr=positive_pixelwise_radius)
+                      arr=visualize_contrasted_grayscale(positive_pixelwise_radius))
             io.imsave(fname=os.path.join(results_p_dir, f'05 Positives - Locations border.jpg'),
                       arr=outline_regions(image=original_image, region_labels=positive_cell_location))
             io.imsave(fname=os.path.join(results_p_dir, f'05 Positives - Distance to border.jpg'),
-                      arr=negative_pixelwise_radius)
+                      arr=visualize_contrasted_grayscale(negative_pixelwise_radius))
             io.imsave(fname=os.path.join(results_p_dir, f'05 Positives - Locations border.jpg'),
                       arr=outline_regions(image=original_image, region_labels=negative_cell_location))
 
