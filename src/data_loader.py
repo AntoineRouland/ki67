@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+import warnings
 
 from skimage.io import imread
 
@@ -14,6 +15,7 @@ def FOLDER_EXPERIMENTS(version):
 FOLDER_TEMP_DATA = os.path.join(FOLDER_RESULTS, '0000 TEMP')
 FOLDER_LABELLED_DATA = os.path.join(FOLDER_RESULTS, 'Labelled')
 
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Generic
 ###

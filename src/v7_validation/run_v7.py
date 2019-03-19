@@ -20,13 +20,13 @@ from src.utils import apply_on_normalized_luminance, colormap, outline_regions, 
 from src.v5_splitting_cells.cellmask_processing import fill_holes, remove_thin_structures, manhattan_distance_to_mask, \
     local_maxima_location
 
-MAX_PATIENTS = 2
-MAX_IMAGES_PER_PATIENT = 2
+MAX_PATIENTS = None
+MAX_IMAGES_PER_PATIENT = 5
 
-SCALE = 0.2     # None  # None to deactivate
+SCALE = 0.5 # None  # None to deactivate
 GAUSSIAN_FILTER_SD = 2
 CLUSTERING_NUM_CENTROIDS = 4
-RADIUS_FILL_HOLES = 5
+RADIUS_FILL_HOLES = 3
 WIDTH_REMOVE_THIN_STRUCTURES = 12
 
 if __name__ == "__main__":
@@ -45,22 +45,25 @@ if __name__ == "__main__":
     all_results = []
     csv_writer = None
 
-    with open(os.path.join(results_dir, 'all_results.csv'), 'w') as csv_results:
+    with open(os.path.join(results_dir, 'all_results.csv'), 'w') as csv_file:
         for idx_s, s_name in enumerate(s_names[0:MAX_PATIENTS]):
 
-            results_p_dir = os.path.join(results_dir, s_name, str(idx_s))
-            os.makedirs(results_p_dir, exist_ok=True)
             Ki67_gt = get_expert_Ki67(s_name)
 
             for path_image, original_image in images(patient_name=s_name, max_images=MAX_IMAGES_PER_PATIENT):
-                m = re.match(fr'{s_name}-(?P<n_img>[0-9]+)', path_image)
-                img_number = int(m.group('idx_img'))
+                m = re.search(f'/{s_name}-(?P<n_img>[0-9]+).(?P<ext>[a-zA-Z]+)$', path_image)
+                img_ext = m.group('ext')
+                img_number = int(m.group('n_img'))
+                img_name = f'{s_name}-{img_number}'
+                img_filename = f'{img_name}.{img_ext}'
+                results_p_dir = os.path.join(results_dir, s_name, img_name)
+                os.makedirs(results_p_dir, exist_ok=True)
 
                 result = {
                     'execution_id': execution_id,
                     'sample_name': s_name,
                     'img_number': img_number,
-                    'img_path': path_image,
+                    'img_file': img_filename,
                     'Ki67_gt': Ki67_gt,
                 }
 
@@ -69,7 +72,7 @@ if __name__ == "__main__":
                 if SCALE:
                     logging.info('Resizing image')
                     sz = [ceil(d*SCALE) for d in original_image.shape[:2]] + [3]
-                    original_image = resize(img_as_float(original_image), sz)
+                    original_image = resize(img_as_float(original_image), sz, mode='reflect', anti_aliasing=True)
                 io.imsave(fname=os.path.join(results_p_dir, '01 01 Original.jpg'),
                           arr=original_image)
                 image = original_image
@@ -152,5 +155,7 @@ if __name__ == "__main__":
                 all_results.append(result)
 
                 if not csv_writer:
-                    csv_writer = csv.DictWriter(csv_results, fieldnames=result.keys())
+                    csv_writer = csv.DictWriter(csv_file, fieldnames=result.keys())
+                    csv_writer.writeheader()
                 csv_writer.writerow(result)
+                csv_file.flush()

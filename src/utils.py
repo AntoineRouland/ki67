@@ -1,4 +1,5 @@
 import hashlib
+import warnings
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,7 +11,10 @@ from skimage.segmentation import find_boundaries
 # Simple Image Processing tasks
 ###
 
+warnings.filterwarnings("ignore", category=UserWarning)
+
 def apply_on_normalized_luminance(operation, image_rgb):
+
     image_lab = rgb2lab(image_rgb)
     luminance = image_lab[:, :, 0]
     a = np.min(luminance)
@@ -19,7 +23,8 @@ def apply_on_normalized_luminance(operation, image_rgb):
     luminance = operation(luminance)
     luminance = luminance*b + a
     image_lab[:, :, 0] = luminance
-    return lab2rgb(image_lab)
+    result = lab2rgb(image_lab)
+    return result
 
 
 def crop(image, bounding_box):
