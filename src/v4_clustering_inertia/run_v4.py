@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import os
 import skimage.io as io
+from easyplot import EasyPlot
 from skimage import img_as_float
 from skimage.color import rgb2lab
 from skimage.exposure import equalize_adapthist
@@ -61,24 +62,24 @@ if __name__ == "__main__":
                 io.imsave(fname=os.path.join(results_p_dir, '01 03 CLAHE.jpg'),
                           arr=image)
 
-                logging.info('K-means clustering')
-                range_centroids = list(range(2, 8))
+                logging.info('K-means clustering and inertia')
+                range_centroids = list(range(1, 10))
                 inertia = np.full(shape=(len(range_centroids), ),
                                   fill_value=np.inf)
                 for idx, num_centroids in enumerate(range_centroids):
                     logging.info(f'{num_centroids:02d} centroids')
                     image_flat = rgb2lab(image).reshape((-1, 3))
                     clustering = KMeans(n_clusters=num_centroids, random_state=0).fit(image_flat)
-                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - {num_centroids:02d} centroids - labels.jpg'),
+                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - s={gaussian_sigma:02d} - {num_centroids:02d} centroids - labels.jpg'),
                               arr=colormap(clustering.labels_.reshape(image.shape[0:2])))
-                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - {num_centroids:02d} centroids - regions.jpg'),
+                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - s={gaussian_sigma:02d} - {num_centroids:02d} centroids - regions.jpg'),
                               arr=outline_regions(image=image, region_labels=clustering.labels_.reshape(image.shape[0:2])))
-                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - {num_centroids:02d} centroids - average_color.jpg'),
+                    io.imsave(fname=os.path.join(results_p_dir, f'02 K-means - s={gaussian_sigma:02d} - {num_centroids:02d} centroids - average_color.jpg'),
                               arr=average_color(image=image, region_labels=clustering.labels_.reshape(image.shape[0:2])))
-                    inertia[idx] = np.min(inertia[idx], clustering.inertia_)
+                    inertia[idx] = min(inertia[idx].item(), clustering.inertia_)
+                    logging.info(f'K-means: s={gaussian_sigma:02d}, {num_centroids:02d} centroids --> Inertia: {clustering.inertia_}.')
 
-                eplot = EasyPlot(x, x ** 2, 'b-o', label='y = x**2', showlegend=True,
-                                 xlabel='x', ylabel='y', title='title', grid='on')
-                io.imsave(fname=os.path.join(results_p_dir,
-                                             f'02 K-means - {num_centroids:02d} centroids - average_color.jpg'),
-                          arr=average_color(image=image, region_labels=clustering.labels_.reshape(image.shape[0:2])))
+                eplot = EasyPlot(range_centroids, inertia, 'b-o', showlegend=True,
+                                 xlabel='Number centroids', ylabel='Clustering inertia',
+                                 title=f'Inertia (Gaussian sd={gaussian_sigma})', grid='on')
+                eplot.kwargs['fig'].savefig(os.path.join(results_p_dir, f'03 K-means inertia - s={gaussian_sigma:02d}'))
