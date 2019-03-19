@@ -22,7 +22,7 @@ RESIZE_IMAGES = None    # (1000, 1000)  # None to deactivate
 
 if __name__ == "__main__":
     execution_id = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    results_dir = root_dir(FOLDER_EXPERIMENTS(version=4), execution_id)
+    results_dir = root_dir(FOLDER_EXPERIMENTS(version=5), execution_id)
     os.makedirs(results_dir, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
