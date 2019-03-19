@@ -35,8 +35,6 @@ if __name__ == "__main__":
     p_names = sample_names()
     for idx_p, p_name in enumerate(p_names[0:MAX_PATIENTS]):
 
-
-
         for idx_img, (path_image, original_image) in enumerate(images(patient_name=p_name, max_images=MAX_IMAGES_PER_PATIENT)):
 
             Ki67 = get_expert_Ki67(p_name)
