@@ -128,8 +128,10 @@ if __name__ == "__main__":
             # Visualize
             io.imsave(fname=os.path.join(results_p_dir, f'04 Positives postprocessed.jpg'),
                       arr=outline_regions(image=original_image, region_labels=positive_mask))
-            io.imsave(fname=os.path.join(results_p_dir, f'04 Negatives postprocessed.jpg'),
-                      arr=outline_regions(image=original_image, region_labels=negative_mask))
+            io.imsave(fname=os.path.join(results_p_dir, f'04 Positives postprocessed.png'), arr=colormap(positive_mask))
+            io.imsave(fname=os.path.join(results_p_dir, f'04 Positives postprocessed.jpg'),
+                      arr=outline_regions(image=original_image, region_labels=positive_mask))
+            io.imsave(fname=os.path.join(results_p_dir, f'04 Negatives postprocessed.png'), arr=colormap(negative_mask))
             result['corrected_positive_area_ratio'] = np.sum(positive_mask)/positive_mask.size
             result['corrected_negative_area_ratio'] = np.sum(negative_mask)/positive_mask.size
             result['Ki67_from_corrected_area_ratios'] = \
