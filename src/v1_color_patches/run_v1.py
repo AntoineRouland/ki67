@@ -26,10 +26,10 @@ if __name__ == "__main__":
     os.makedirs(results_dir, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
-        handlers=[
+        handlers={
             logging.FileHandler(os.path.join(results_dir, 'log.txt')),
             logging.StreamHandler()
-        ]
+        }
     )
 
     p_names = sample_names()

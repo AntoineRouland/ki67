@@ -15,5 +15,3 @@ def color_segmentation(image):
         image_averaged[selected_region_idcs, :] = average_color[:]
     image_averaged = image_averaged.reshape(image.shape)
     return segmentation_idcs, image_averaged
-
-
