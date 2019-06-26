@@ -7,10 +7,12 @@ from skimage.io import imread
 
 FOLDER_DATA = 'Data'
 FOLDER_RESULTS = 'Results'
+FOLDER_REFERENCES = 'References'
 
 
 def FOLDER_EXPERIMENTS(version):
     return os.path.join(FOLDER_RESULTS, f'Experiments v{version}')
+
 
 FOLDER_TEMP_DATA = os.path.join(FOLDER_RESULTS, '0000 TEMP')
 FOLDER_LABELLED_DATA = os.path.join(FOLDER_RESULTS, 'Labelled')
@@ -65,6 +67,29 @@ def read_from_csv(NCH, csv_row):
                 return row[csv_row]
     raise AttributeError()
 
+
 def get_expert_Ki67(sample_name):
     m = re.match(r'(?P<NCH>[0-9]*) ?-(?P<Zone>[AB])[0-9]', sample_name)
     return int(read_from_csv(NCH=m.group('NCH'), csv_row=f"Zona {m.group('Zone')} - Ki67"))
+
+# References for optimization
+###
+
+
+def references_names():
+    path_data = root_dir(FOLDER_REFERENCES)
+    return [name for name in os.listdir(path_data)
+            if os.path.isdir(os.path.join(path_data, name))]
+
+
+def references_paths(references_name):
+    path_images = root_dir(FOLDER_REFERENCES, references_name)
+    return [os.path.join(path_images, name) for name in os.listdir(path_images)
+            if os.path.splitext(os.path.join(path_images, name))[1] == '.png']
+
+
+def originals_paths(references_name):
+    path_images = root_dir(FOLDER_REFERENCES, references_name)
+    return [os.path.join(path_images, name) for name in os.listdir(path_images)
+            if os.path.splitext(os.path.join(path_images, name))[1] == '.jpg']
+

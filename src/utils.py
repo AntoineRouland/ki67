@@ -13,6 +13,7 @@ from skimage.segmentation import find_boundaries
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
 def apply_on_normalized_luminance(operation, image_rgb):
 
     image_lab = rgb2lab(image_rgb)
@@ -28,8 +29,8 @@ def apply_on_normalized_luminance(operation, image_rgb):
 
 
 def crop(image, bounding_box):
-        r_left, r_right, c_left, c_right = bounding_box
-        return image[r_left:r_right, c_left:c_right, ...]
+    r_left, r_right, c_left, c_right = bounding_box
+    return image[r_left:r_right, c_left:c_right, ...]
 
 
 # Visualization
