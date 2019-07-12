@@ -1,13 +1,7 @@
 import numpy as np
 from skimage.morphology import disk
 import matplotlib.pyplot as plt
-
-
-def gauss_2d(mu, sigma, length):
-    x, y = np.meshgrid(np.linspace(-1, 1, length), np.linspace(-1, 1, length))
-    d = np.sqrt(x * x + y * y)
-    g = np.exp(-((d - mu) ** 2 / (2.0 * sigma ** 2)))
-    return g
+import os
 
 
 def mse_cielab_on_image(image_lab, color_lab):
@@ -37,7 +31,7 @@ def weight(r_center, shape):
        int(shape[0]/2) - r_center:int(shape[0]/2) + r_center + 1] = disk(r_center)
     d2 = np.zeros(shape)
     d2[0:shape[0], 0:shape[0]] = disk(int(shape[0]/2))
-    d2 = (np.ones(shape) - d2) * 0.01
+    d2 = (np.ones(shape) - d2) * 0.005
     return d1 + d2
 
 
@@ -61,3 +55,33 @@ def create_se(shape, color_foreground, color_background, mask, mask_c):
     se[:, :, 1] = mask * color_foreground[1] + mask_c * color_background[1]
     se[:, :, 2] = mask * color_foreground[2] + mask_c * color_background[2]
     return se
+
+
+def plot_kappa_score(k_history, nb_image, results_dir):
+
+    for i in range(nb_image):
+        fig = plt.figure()
+        ax = plt.axes()
+        plt.plot(np.linspace(1, len(k_history[i]), len(k_history[i])), k_history[i])
+        plt.title(f'cohen\'s kappa score for image{i}')
+        ax.set(xlabel='iterations', ylabel='cohen\'s kappa score')
+        plt.ylim((0, 1))
+        plt.savefig(fname=os.path.join(results_dir, f'cohen\'s kappa score for image {i}.jpg'))
+
+    fig = plt.figure()
+    ax = plt.axes()
+    plt.plot(np.linspace(1, len(k_history[-1]), len(k_history[-1])), k_history[-1])
+    plt.title(f'average cohen\'s kappa score')
+    ax.set(xlabel='iterations', ylabel='cohen\'s kappa score')
+    plt.ylim((0, 1))
+    plt.savefig(fname=os.path.join(results_dir, f'average cohen\'s kappa score.jpg'))
+
+
+def ki_67_percentage(mask_positive, mask_negative):
+    total_area = mask_positive.shape[0] * mask_positive.shape[1]
+    area_positive = np.sum(mask_positive)
+    visible_area_negative = np.sum(mask_negative)
+    visible_area_negative_percentage = visible_area_negative / (total_area - area_positive)
+    hidden_area_negative = visible_area_negative_percentage * area_positive
+    area_negative = visible_area_negative + hidden_area_negative
+    return area_positive / (area_positive + area_negative)

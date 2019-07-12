@@ -12,13 +12,11 @@ from skimage.color import rgb2lab
 from src.data_loader import root_dir, FOLDER_EXPERIMENTS, references_paths, references_names, originals_paths
 from src.v8_test.segmentation import segmentation
 from src.v8_test.validation import validation
-from src.utils import apply_on_normalized_luminance
-from src.utils import outline_regions
+from src.utils import apply_on_normalized_luminance, outline_regions
+from src.v8_test.fct import plot_kappa_score
 
 from scipy.optimize import minimize
 from random import randint
-
-import matplotlib.pyplot as plt
 
 MAX_PATIENTS = 1
 MAX_IMAGES_PER_PATIENT = 1
@@ -31,33 +29,36 @@ def test_on_all_images(initial_value):
     white_lab = dictionary_arguments.get('white_lab', 0)
 
     k_list = []
-    for j in range(nb_images):
+    for p in range(nb_images):
         if param_name == 'brown_lab':
-            all_mask = segmentation(image_lab_list[j], 2, 2, 2,
+            all_mask = segmentation(image_lab_list[p], 2, 2, 2,
                                     brown_lab=initial_value,
                                     blue_lab=blue_lab,
                                     white_lab=white_lab)
         elif param_name == 'blue_lab':
-            all_mask = segmentation(image_lab_list[j], 2, 2, 2,
+            all_mask = segmentation(image_lab_list[p], 2, 2, 2,
                                     brown_lab=brown_lab,
                                     blue_lab=initial_value,
                                     white_lab=white_lab)
         elif param_name == 'white_lab':
-            all_mask = segmentation(image_lab_list[j], 2, 2, 2,
+            all_mask = segmentation(image_lab_list[p], 2, 2, 2,
                                     brown_lab=brown_lab,
                                     blue_lab=blue_lab,
                                     white_lab=initial_value)
 
-        k = validation(all_mask[0, :, :], all_mask[1, :, :], all_mask[2, :, :], ref_paths[j][0], ref_paths[j][1])
+        k = validation(all_mask[0, :, :], all_mask[1, :, :], all_mask[2, :, :], ref_paths[p][0], ref_paths[p][1])
         print('k = ', k)
 
         k_list.append(k)
-        history.append({
-            'parameter': param_name,
-            'value': initial_value,
-        })
+        k_history[p].append(k)
+
+    history.append({
+        'parameter': param_name,
+        'value': initial_value,
+    })
 
     print('k mean = ', np.mean(k_list))
+    k_history[-1].append(np.mean(k_list))
 
     return 1 / np.mean(k_list)
 
@@ -98,7 +99,8 @@ if __name__ == "__main__":
 
         logging.info('Resizing')
         resize_factor = 8
-        image_original_list.append(resize(image, (int(image.shape[0] / resize_factor), (image.shape[1] / resize_factor)),
+        image_original_list.append(resize(image,
+                                          (int(image.shape[0] / resize_factor), (image.shape[1] / resize_factor)),
                                    anti_aliasing=True))
 
         logging.info('Gaussian filter')
@@ -130,13 +132,18 @@ if __name__ == "__main__":
         'white_lab': np.array([80.99, -1.56, -0.01])
     }
 
+    nb_iteration = 30
+    k_history = [[] for i in range(nb_images + 1)]
     history = []
 
-    for j in range(2):
+    for j in range(3):
         for param_name, param_initial_value in dictionary_arguments.items():
             result = minimize(fun=test_on_all_images, x0=param_initial_value, method='L-BFGS-B',
                               bounds=((0, 100), (-128, 127), (-128, 127)),
-                              options={'eps': 1, 'maxfun': 2, 'maxiter': 2})
+                              options={'eps': 1,
+                                       'maxfun': nb_iteration,
+                                       'maxiter': nb_iteration,
+                                       'maxls': nb_iteration})
 
             dictionary_arguments[param_name] = result.x
 
@@ -149,16 +156,26 @@ if __name__ == "__main__":
             results_p_dir_bis = os.path.join(results_dir, "image", param_name, f'{result.x}')
             os.makedirs(results_p_dir_bis, exist_ok=True)
 
-            regions_positive = outline_regions(image_original_list[n], masks[0, :, :])
+            regions_positive = outline_regions(image_original_list[n][10:image_original_list[n].shape[0] - 10,
+                                               10:image_original_list[n].shape[1] - 10], masks[0, :, :])
             io.imsave(fname=os.path.join(results_p_dir_bis, f'regions positive.jpg'),
                       arr=regions_positive)
-            regions_negative = outline_regions(image_original_list[n], masks[1, :, :])
+            regions_negative = outline_regions(image_original_list[n][10:image_original_list[n].shape[0] - 10,
+                                               10:image_original_list[n].shape[1] - 10], masks[1, :, :])
             io.imsave(fname=os.path.join(results_p_dir_bis, f'regions negative.jpg'),
                       arr=regions_negative)
-            regions_background = outline_regions(image_original_list[n], masks[2, :, :])
+            regions_background = outline_regions(image_original_list[n][10:image_original_list[n].shape[0] - 10,
+                                                 10:image_original_list[n].shape[1] - 10], masks[2, :, :])
             io.imsave(fname=os.path.join(results_p_dir_bis, f'regions background.jpg'),
                       arr=regions_background)
 
-    file = open("/home/uib/PycharmProjects/ki67/Results/history.txt", "w")
+            results_p_dir_plots = os.path.join(results_dir, "plot", f'iteration {j}')
+            os.makedirs(results_p_dir_plots, exist_ok=True)
+
+            plot_kappa_score(k_history, nb_images, results_p_dir_plots)
+
+    file = open(os.path.join(results_dir, "/home/uib/PycharmProjects/ki67/Results/history.txt"), "w")
     file.write(f'{history})')
     file.close()
+
+    print(dictionary_arguments.values())

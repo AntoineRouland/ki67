@@ -1,25 +1,8 @@
-import datetime
-import logging
-
 import numpy as np
-import matplotlib.pyplot as plt
-import os
 import skimage.io as io
-from skimage import img_as_float
-from skimage.color import rgb2lab, gray2rgb, lab2rgb, rgb2gray
-from skimage.exposure import equalize_adapthist
-from skimage.filters import gaussian, try_all_threshold, threshold_isodata
-from skimage.transform import resize
-from skimage.morphology import disk
-from mpl_toolkits import mplot3d
-from scipy.special import softmax
-from sklearn.metrics import cohen_kappa_score
 
-from src.v1_color_patches.patch_classifier import PatchClassifier, pixelwise_closest_centroid, PROTOTYPES_Ki67_RGB
-from src.v1_color_patches.color_segmentation import color_segmentation
-from src.data_loader import sample_names, images, root_dir, FOLDER_EXPERIMENTS
-from src.utils import apply_on_normalized_luminance, visualize_classification, colormap, outline_regions, crop
-from src.v8_test.fct import score_map_mse, weight
+from skimage.transform import resize
+from sklearn.metrics import cohen_kappa_score
 
 
 def validation(positive, negative, background, mask_positive_path, mask_negative_path):

@@ -1,16 +1,9 @@
 import logging
 
 import numpy as np
-import os
-import skimage.io as io
-import matplotlib.pyplot as plt
 
-
-from skimage.morphology import disk
-from skimage.color import rgb2lab
 from scipy.special import softmax
 
-from src.utils import outline_regions, average_color
 from src.v8_test.fct import score_map_mse, weight, weight_background, create_mask_and_complementary, create_se
 
 
